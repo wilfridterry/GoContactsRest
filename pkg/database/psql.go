@@ -2,33 +2,29 @@ package database
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
 )
 
-type ConnectionInfo struct {
+type ConnectionConfig struct {
 	Host     string
 	Port     uint16
-	DBName   string
+	Database string
 	Username string
 	Password string
 	SSLMode  bool
 }
 
-func NewConnection(info *ConnectionInfo) (*pgx.Conn, error) {
-	conn, err := pgx.Connect(pgx.ConnConfig{
-		Host:     info.Host,
-		Port:     info.Port,
-		Database: info.DBName,
-		User:     info.Username,
-		Password: info.Password,
-	})
+func NewConnection(ctx context.Context, cf *ConnectionConfig) (*pgx.Conn, error) {
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cf.Username, cf.Password, cf.Host, cf.Port, cf.Database)
+	conn, err := pgx.Connect(ctx, connString)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if err = conn.Ping(context.TODO()); err != nil {
+	if err = conn.Ping(ctx); err != nil {
 		return nil, err
 	}
 

@@ -1,0 +1,6 @@
+server:
+  port: 8080
+
+logger:
+  dir: "storage/logs"
+  filename: "test.log"
