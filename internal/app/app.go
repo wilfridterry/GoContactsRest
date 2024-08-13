@@ -2,6 +2,7 @@ package app
 
 import (
 	"contact-list/internal/config"
+	"contact-list/internal/repository/psql"
 	"contact-list/internal/service"
 	"contact-list/internal/transport/rest"
 	"contact-list/pkg/database"
@@ -65,7 +66,8 @@ func Run() {
 	}
 	defer conn.Close(ctx)
 
-	service := service.NewContacts()
+	repository := psql.NewContacts(conn)
+	service := service.NewContacts(repository)
 	handler := rest.NewHandler(service)
 
 	srv := &http.Server{

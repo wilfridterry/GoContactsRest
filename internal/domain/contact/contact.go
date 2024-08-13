@@ -1,6 +1,13 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrContactNotFound = errors.New("Contact not found")
+)
 
 type Contact struct {
 	ID        int64     `json:"id"`
@@ -12,4 +19,13 @@ type Contact struct {
 	Author    string    `json:"author"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type SaveInputContact struct {
+	Name      *string
+	LastName  *string
+	Phone     *string
+	Email     *string
+	Address   *string
+	Author    *string
 }
