@@ -21,6 +21,10 @@ type Contacts interface {
 	Delete(context.Context, int64) error
 }
 
+type Uri struct{
+	ID int64 `uri:"id" binding:"required"`
+}
+
 func (h *Handler) InitRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(gin.Logger())
@@ -30,8 +34,11 @@ func (h *Handler) InitRouter() *gin.Engine {
 	{
 		contacts := v1.Group("/contacts")
 		{
+			contacts.POST("/", h.createContact)
 			contacts.GET("/", h.getContacts)
 			contacts.GET("/:id", h.getContact)
+			contacts.DELETE("/:id", h.deleteContact)
+			contacts.PUT("/:id", h.updateAccount)
 		}
 	}
 
@@ -53,12 +60,13 @@ func (h *Handler) getContacts(c *gin.Context) {
 } 
 
 func (h *Handler) getContact(c *gin.Context) {
-	var id int64
-	if err := c.ShouldBindUri(&id); err != nil {
+	var uri Uri
+	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	contact, err := h.service.GetOne(c.Request.Context(), id)
+
+	contact, err := h.service.GetOne(c.Request.Context(), uri.ID)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrContactNotFound) {
@@ -66,7 +74,70 @@ func (h *Handler) getContact(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	c.JSON(http.StatusOK, contact)
+	c.JSON(http.StatusOK, contact)	
+} 
 
+func (h *Handler) createContact(c *gin.Context) {
+	var inp domain.SaveInputContact
+	if err := c.ShouldBindJSON(&inp); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.Create(c.Request.Context(), &inp); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Created."})
+}
+
+func (h *Handler) deleteContact(c *gin.Context) {
+	var uri Uri
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.Delete(c.Request.Context(), uri.ID); 
+	err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})	
+} 
+
+func (h *Handler) updateAccount(c *gin.Context) {
+	var uri Uri
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var inp domain.SaveInputContact
+	if err := c.ShouldBindJSON(&inp); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.Update(c.Request.Context(), uri.ID, &inp); 
+	err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	contact, err := h.service.GetOne(c.Request.Context(), uri.ID)
+	if err != nil {
+		if errors.Is(err, domain.ErrContactNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, contact)
 } 

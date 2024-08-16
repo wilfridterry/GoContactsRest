@@ -22,10 +22,10 @@ type Contact struct {
 }
 
 type SaveInputContact struct {
-	Name      *string
-	LastName  *string
-	Phone     *string
-	Email     *string
-	Address   *string
-	Author    *string
+	Name      string `json:"name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Phone     string `json:"phone" binding:"required,e164"`
+	Email     string `json:"email" binding:"required,email,unique"`
+	Address   string `json:"address" binding:"required"`
+	Author    string `json:"author" binding:"required"`
 }
