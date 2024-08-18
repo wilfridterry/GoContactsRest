@@ -7,6 +7,9 @@ import (
 )
 
 type Config struct {
+	Enviroment string
+	Secret string
+
 	DB Postgres
 
 	Server struct {

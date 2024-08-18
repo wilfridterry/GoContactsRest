@@ -1,7 +1,7 @@
 package psql
 
 import (
-	domain "contact-list/internal/domain/contact"
+	"contact-list/internal/domain"
 	"context"
 	"fmt"
 	"strings"

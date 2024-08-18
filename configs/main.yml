@@ -1,3 +1,6 @@
+enviroment: local
+secret: "salt"
+
 server:
   port: 8080
 

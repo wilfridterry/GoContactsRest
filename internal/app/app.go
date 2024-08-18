@@ -6,6 +6,7 @@ import (
 	"contact-list/internal/service"
 	"contact-list/internal/transport/rest"
 	"contact-list/pkg/database"
+	"contact-list/pkg/hashier"
 	"context"
 	"fmt"
 	"io"
@@ -66,9 +67,14 @@ func Run() {
 	}
 	defer conn.Close(ctx)
 
-	repository := psql.NewContacts(conn)
-	service := service.NewContacts(repository)
-	handler := rest.NewHandler(service)
+	contactsRepo := psql.NewContacts(conn)
+	contactsService := service.NewContacts(contactsRepo)
+
+	userRepo := psql.NewUsers(conn)
+	hashier := hashier.NewHashier(cf.Secret)
+	userService := service.NewUsers(userRepo, hashier)
+
+	handler := rest.NewHandler(contactsService, userService)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cf.Server.Port),

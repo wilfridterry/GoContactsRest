@@ -1,7 +1,7 @@
 package service
 
 import (
-	domain "contact-list/internal/domain/contact"
+	"contact-list/internal/domain"
 	"context"
 )
 
