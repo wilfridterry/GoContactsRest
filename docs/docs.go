@@ -16,6 +16,55 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/sign-up": {
+            "post": {
+                "description": "sign up with data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "sign up to the system",
+                "parameters": [
+                    {
+                        "description": "user sign up",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contact-list_internal_domain.UserSignUp"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/contacts": {
             "get": {
                 "description": "get contacts",
@@ -35,7 +84,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/contact-list_internal_domain_contact.Contact"
+                                "$ref": "#/definitions/contact-list_internal_domain.Contact"
                             }
                         }
                     },
@@ -78,7 +127,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain_contact.SaveInputContact"
+                            "$ref": "#/definitions/contact-list_internal_domain.SaveInputContact"
                         }
                     }
                 ],
@@ -133,7 +182,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain_contact.Contact"
+                            "$ref": "#/definitions/contact-list_internal_domain.Contact"
                         }
                     },
                     "400": {
@@ -175,7 +224,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain_contact.SaveInputContact"
+                            "$ref": "#/definitions/contact-list_internal_domain.SaveInputContact"
                         }
                     },
                     {
@@ -190,7 +239,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain_contact.Contact"
+                            "$ref": "#/definitions/contact-list_internal_domain.Contact"
                         }
                     },
                     "400": {
@@ -261,7 +310,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "contact-list_internal_domain_contact.Contact": {
+        "contact-list_internal_domain.Contact": {
             "type": "object",
             "properties": {
                 "address": {
@@ -293,7 +342,7 @@ const docTemplate = `{
                 }
             }
         },
-        "contact-list_internal_domain_contact.SaveInputContact": {
+        "contact-list_internal_domain.SaveInputContact": {
             "type": "object",
             "required": [
                 "address",
@@ -320,6 +369,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "contact-list_internal_domain.UserSignUp": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }

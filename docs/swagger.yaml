@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  contact-list_internal_domain_contact.Contact:
+  contact-list_internal_domain.Contact:
     properties:
       address:
         type: string
@@ -21,7 +21,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  contact-list_internal_domain_contact.SaveInputContact:
+  contact-list_internal_domain.SaveInputContact:
     properties:
       address:
         type: string
@@ -43,6 +43,19 @@ definitions:
     - name
     - phone
     type: object
+  contact-list_internal_domain.UserSignUp:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
   httputil.HTTPError:
     properties:
       code:
@@ -63,6 +76,38 @@ info:
   title: Swagger Contacts API
   version: "1.0"
 paths:
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: sign up with data
+      parameters:
+      - description: user sign up
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/contact-list_internal_domain.UserSignUp'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+      summary: sign up to the system
+      tags:
+      - auth
   /contacts:
     get:
       consumes:
@@ -75,7 +120,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/contact-list_internal_domain_contact.Contact'
+              $ref: '#/definitions/contact-list_internal_domain.Contact'
             type: array
         "400":
           description: Bad Request
@@ -102,7 +147,7 @@ paths:
         name: contact
         required: true
         schema:
-          $ref: '#/definitions/contact-list_internal_domain_contact.SaveInputContact'
+          $ref: '#/definitions/contact-list_internal_domain.SaveInputContact'
       produces:
       - application/json
       responses:
@@ -170,7 +215,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contact-list_internal_domain_contact.Contact'
+            $ref: '#/definitions/contact-list_internal_domain.Contact'
         "400":
           description: Bad Request
           schema:
@@ -196,7 +241,7 @@ paths:
         name: contact
         required: true
         schema:
-          $ref: '#/definitions/contact-list_internal_domain_contact.SaveInputContact'
+          $ref: '#/definitions/contact-list_internal_domain.SaveInputContact'
       - description: Contact ID
         in: path
         name: id
@@ -208,7 +253,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contact-list_internal_domain_contact.Contact'
+            $ref: '#/definitions/contact-list_internal_domain.Contact'
         "400":
           description: Bad Request
           schema:

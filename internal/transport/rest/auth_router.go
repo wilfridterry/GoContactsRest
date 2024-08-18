@@ -15,7 +15,7 @@ import (
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param user body domain.UserSignUp true "User "
+// @Param user body domain.UserSignUp true "user sign up"
 // @Success      201
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      404  {object}  httputil.HTTPError

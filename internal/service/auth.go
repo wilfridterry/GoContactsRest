@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	Create(context.Context, domain.User) error
+	Create(context.Context, domain.User) (int64, error)
 }
 
 type Hashier interface {
@@ -27,10 +27,17 @@ func (service *Users) SignUp(ctx context.Context, inp *domain.UserSignUp) (*doma
 
 	user := domain.User{
 		Name: inp.Name,
-		Email: inp.Password,
+		Email: inp.Email,
 		Password: password,
 		RegisteredAt: time.Now(),
 	}
+
+	id, err := service.repo.Create(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	user.ID = id
 
 	return &user, nil
 }

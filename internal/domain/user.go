@@ -13,7 +13,7 @@ type User struct {
 }
 
 type UserSignUp struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email,unique"`
-	Password string `json:"password" binding:"required"`
+	Name     string `json:"name" binding:"required,gte=2,lte=255"`
+	Email    string `json:"email" binding:"required,email,gte=4,lte=255"`
+	Password string `json:"password" binding:"required,gte=6,lte=70"`
 }
