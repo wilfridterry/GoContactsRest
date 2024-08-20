@@ -1,6 +1,9 @@
 enviroment: local
 secret: "salt"
 
+auth:
+  ttl: "15m"
+
 server:
   port: 8080
 

@@ -25,7 +25,8 @@ type Contacts interface {
 }
 
 type Users interface {
-	SignUp(context.Context, *domain.UserSignUp) (*domain.User, error)
+	SignUp(context.Context, *domain.SignUpInput) (*domain.User, error)
+	SingIn(context.Context, *domain.SignInInput) (string, error)
 }
 
 type Uri struct{
@@ -51,6 +52,7 @@ func (h *Handler) InitRouter() *gin.Engine {
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/sign-up", h.signUp)
+			auth.GET("/sign-in", h.signIn)
 		}
 	}
 
@@ -58,7 +60,6 @@ func (h *Handler) InitRouter() *gin.Engine {
 
 	return r
 }
-
 
 func NewHandler(contacts Contacts, users Users) *Handler {
 	return &Handler{contacts, users}

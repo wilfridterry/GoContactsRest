@@ -3,6 +3,7 @@ package psql
 import (
 	"contact-list/internal/domain"
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -27,4 +28,20 @@ func (repo *Users) Create(ctx context.Context, user domain.User) (int64, error) 
 	).Scan(&lastInsertId)
 
 	return lastInsertId, err
+}
+
+func (repo *Users) GetByEmailAndPassword(ctx context.Context, email string, password string) (*domain.User, error) {
+	var u domain.User
+	err := repo.Conn.QueryRow(ctx, "SELECT * FROM user WHERE email=$1 AND password=$2", email, password).
+		Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.RegisteredAt, &u.CreatedAt, &u.UpdatedAt)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFoundUser
+		}
+
+		return nil, err
+	}
+
+	return &u, nil
 }

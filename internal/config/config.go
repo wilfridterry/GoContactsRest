@@ -12,6 +12,10 @@ type Config struct {
 
 	DB Postgres
 
+	Auth struct {
+		Ttl int `mapstructure:"ttl"`
+	} `mapstructure:"auth"`
+
 	Server struct {
 		Port int `mapstructure:"port"`
 	} `mapstructure:"server"`
