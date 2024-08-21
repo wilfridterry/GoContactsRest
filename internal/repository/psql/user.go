@@ -32,7 +32,7 @@ func (repo *Users) Create(ctx context.Context, user domain.User) (int64, error) 
 
 func (repo *Users) GetByEmailAndPassword(ctx context.Context, email string, password string) (*domain.User, error) {
 	var u domain.User
-	err := repo.Conn.QueryRow(ctx, "SELECT * FROM user WHERE email=$1 AND password=$2", email, password).
+	err := repo.Conn.QueryRow(ctx, "SELECT * FROM users WHERE email=$1 AND password=$2", email, password).
 		Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.RegisteredAt, &u.CreatedAt, &u.UpdatedAt)
 
 	if err != nil {

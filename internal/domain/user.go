@@ -27,5 +27,5 @@ type SignUpInput struct {
 
 type SignInInput struct {
 	Email    string `json:"email" binding:"required,email,gte=4,lte=255"`
-	Password string `json:"password" binding:"required,gte=6,lte=70"`	
+	Password string `json:"password" binding:"required,gte=6,lte=70"`
 }

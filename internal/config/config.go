@@ -1,9 +1,11 @@
 package config
 
 import (
+	"time"
+
+	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/viper"
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -13,7 +15,7 @@ type Config struct {
 	DB Postgres
 
 	Auth struct {
-		Ttl int `mapstructure:"ttl"`
+		TokenTTL time.Duration `mapstructure:"ttl"`
 	} `mapstructure:"auth"`
 
 	Server struct {

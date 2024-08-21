@@ -1,11 +1,11 @@
 enviroment: local
-secret: "salt"
+secret: salt
 
 auth:
-  ttl: "15m"
+  ttl: 15m
 
 server:
-  port: 8080
+  port: 8081
 
 logger:
   dir: "storage/logs"

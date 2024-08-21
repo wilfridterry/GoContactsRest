@@ -72,7 +72,7 @@ func Run() {
 
 	userRepo := psql.NewUsers(conn)
 	hashier := hashier.NewHashier(cf.Secret)
-	userService := service.NewUsers(userRepo, hashier, []byte(cf.Secret), time.Duration(cf.Auth.Ttl))
+	userService := service.NewUsers(userRepo, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
 
 	handler := rest.NewHandler(contactsService, userService)
 

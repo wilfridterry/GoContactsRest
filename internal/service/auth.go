@@ -19,10 +19,14 @@ type Hashier interface {
 }
 
 type Users struct {
-	repo     UserRepository
-	hashier  Hashier
-	hmacSecret   []byte
-	ttlToken time.Duration
+	repo       UserRepository
+	hashier    Hashier
+	hmacSecret []byte
+	ttlToken   time.Duration
+}
+
+func NewUsers(repo UserRepository, hashier Hashier, secret []byte, ttlToken time.Duration) *Users {
+	return &Users{repo, hashier, secret, ttlToken}
 }
 
 func (service *Users) SignUp(ctx context.Context, inp *domain.SignUpInput) (*domain.User, error) {
@@ -59,11 +63,11 @@ func (service *Users) SingIn(ctx context.Context, inp *domain.SignInInput) (stri
 	if err != nil {
 		return "", err
 	}
-	
-	t := jwt.NewWithClaims(jwt.SigningMethodES256, 
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"subject": strconv.Itoa(int(user.ID)),
-			"issued_at": time.Now().Unix(),
+			"subject":    strconv.Itoa(int(user.ID)),
+			"issued_at":  time.Now().Unix(),
 			"expires_at": time.Now().Add(service.ttlToken).Unix(),
 		},
 	)
@@ -71,6 +75,4 @@ func (service *Users) SingIn(ctx context.Context, inp *domain.SignInInput) (stri
 	return t.SignedString(service.hmacSecret)
 }
 
-func NewUsers(repo UserRepository, hashier Hashier, secret []byte, ttlToken time.Duration) *Users {
-	return &Users{repo, hashier, secret, ttlToken}
-}
+// func (service *Users) ParseToken()
