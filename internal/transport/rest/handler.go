@@ -12,8 +12,8 @@ import (
 )
 
 type Handler struct {
-	serviceContacts Contacts
-	serviceUsers Users
+	contactService Contacts
+	authServie Auth
 }
 
 type Contacts interface {
@@ -24,9 +24,10 @@ type Contacts interface {
 	Delete(context.Context, int64) error
 }
 
-type Users interface {
+type Auth interface {
 	SignUp(context.Context, *domain.SignUpInput) (*domain.User, error)
 	SingIn(context.Context, *domain.SignInInput) (string, error)
+	ParseJWTToken(context.Context, string) (int64, error)
 }
 
 type Uri struct{
@@ -40,7 +41,7 @@ func (h *Handler) InitRouter() *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	{
-		contacts := v1.Group("/contacts")
+		contacts := v1.Group("/contacts").Use(h.AuthJWT())
 		{
 			contacts.POST("/", h.createContact)
 			contacts.GET("/", h.getContacts)
@@ -61,6 +62,6 @@ func (h *Handler) InitRouter() *gin.Engine {
 	return r
 }
 
-func NewHandler(contacts Contacts, users Users) *Handler {
-	return &Handler{contacts, users}
+func NewHandler(contacts Contacts, auth Auth) *Handler {
+	return &Handler{contacts, auth}
 }

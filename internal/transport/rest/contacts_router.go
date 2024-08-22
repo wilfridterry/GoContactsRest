@@ -22,7 +22,7 @@ import (
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /contacts [get]
 func (h *Handler) getContacts(c *gin.Context) {
-	contacts, err := h.serviceContacts.All(c.Request.Context())
+	contacts, err := h.contactService.All(c.Request.Context())
 	if err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 	} else {
@@ -49,7 +49,7 @@ func (h *Handler) getContact(c *gin.Context) {
 		return
 	}
 
-	contact, err := h.serviceContacts.GetOne(c.Request.Context(), uri.ID)
+	contact, err := h.contactService.GetOne(c.Request.Context(), uri.ID)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrContactNotFound) {
@@ -83,7 +83,7 @@ func (h *Handler) createContact(c *gin.Context) {
 		return
 	}
 
-	if err := h.serviceContacts.Create(c.Request.Context(), &inp); err != nil {
+	if err := h.contactService.Create(c.Request.Context(), &inp); err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 
 		return
@@ -112,7 +112,7 @@ func (h *Handler) deleteContact(c *gin.Context) {
 		return
 	}
 
-	if err := h.serviceContacts.Delete(c.Request.Context(), uri.ID); err != nil {
+	if err := h.contactService.Delete(c.Request.Context(), uri.ID); err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 
 		return
@@ -148,12 +148,12 @@ func (h *Handler) updateAccount(c *gin.Context) {
 		return
 	}
 
-	if err := h.serviceContacts.Update(c.Request.Context(), uri.ID, &inp); err != nil {
+	if err := h.contactService.Update(c.Request.Context(), uri.ID, &inp); err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 		return
 	}
 
-	contact, err := h.serviceContacts.GetOne(c.Request.Context(), uri.ID)
+	contact, err := h.contactService.GetOne(c.Request.Context(), uri.ID)
 	if err != nil {
 		if errors.Is(err, domain.ErrContactNotFound) {
 			httputil.NewError(c, http.StatusNotFound, err)

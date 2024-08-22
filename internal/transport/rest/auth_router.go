@@ -31,7 +31,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	user, err := h.serviceUsers.SignUp(c.Request.Context(), &inp)
+	user, err := h.authServie.SignUp(c.Request.Context(), &inp)
 	
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
@@ -63,11 +63,12 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.serviceUsers.SingIn(c.Request.Context(), &inp)
+	token, err := h.authServie.SingIn(c.Request.Context(), &inp)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFoundUser) {
 			httputil.NewError(c, http.StatusBadRequest, err)
+			return
 		}
 
 		httputil.NewError(c, http.StatusInternalServerError, err)

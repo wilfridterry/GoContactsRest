@@ -3,7 +3,6 @@ package service
 import (
 	"contact-list/internal/domain"
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,6 +22,13 @@ type Users struct {
 	hashier    Hashier
 	hmacSecret []byte
 	ttlToken   time.Duration
+}
+
+type UserClaim struct {
+	jwt.RegisteredClaims
+	ID        int64
+	IssuedAt  int64
+	ExpiresAt int64
 }
 
 func NewUsers(repo UserRepository, hashier Hashier, secret []byte, ttlToken time.Duration) *Users {
@@ -64,15 +70,35 @@ func (service *Users) SingIn(ctx context.Context, inp *domain.SignInInput) (stri
 		return "", err
 	}
 
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"subject":    strconv.Itoa(int(user.ID)),
-			"issued_at":  time.Now().Unix(),
-			"expires_at": time.Now().Add(service.ttlToken).Unix(),
-		},
-	)
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, UserClaim{
+		RegisteredClaims: jwt.RegisteredClaims{},
+		ID:               int64(user.ID),
+		IssuedAt:         time.Now().Unix(),
+		ExpiresAt:        time.Now().Add(service.ttlToken).Unix(),
+	})
 
 	return t.SignedString(service.hmacSecret)
 }
 
-// func (service *Users) ParseToken()
+func (service *Users) ParseJWTToken(ctx context.Context, tokenString string) (int64, error) {
+	userClaim := &UserClaim{}
+	token, err := jwt.ParseWithClaims(tokenString, userClaim, func(token *jwt.Token) (interface{}, error) {
+		return service.hmacSecret, nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	if !token.Valid {
+		return 0, err
+	}
+
+	userClaim, ok := token.Claims.(*UserClaim)
+	
+	if !ok {
+		return 0, err
+	}
+
+	return userClaim.ID, nil
+}
