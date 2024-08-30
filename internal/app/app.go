@@ -69,13 +69,13 @@ func Run() {
 	}
 	defer conn.Close(ctx)
 
-	contactsRepo := psql.NewContacts(conn)
-	contactsService := service.NewContacts(contactsRepo)
-
 	auditClient, err := grpc_client.NewClient(cf.Grpc.Port)
 	if err != nil {
 		log.Error(err)
 	}
+
+	contactsRepo := psql.NewContacts(conn)
+	contactsService := service.NewContacts(contactsRepo, auditClient)
 
 	userRepo := psql.NewUsers(conn)
 	hashier := hashier.NewHashier(cf.Secret)

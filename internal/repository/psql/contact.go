@@ -48,14 +48,16 @@ func (repo *Contacts) GetById(ctx context.Context, id int64) (*domain.Contact, e
 	return &c, nil
 }
 
-func (repo *Contacts) Create(ctx context.Context, inp *domain.SaveInputContact) error {
-	_, err := repo.Conn.Exec(
-		ctx,
-		"INSERT INTO contacts (name, last_name, phone, email, address, author) values ($1, $2, $3, $4, $5, $6)",
-		inp.Name, inp.LastName, inp.Phone, inp.Email, inp.Address, inp.Author,
-	)
+func (repo *Contacts) Create(ctx context.Context, inp *domain.SaveInputContact) (int64, error) {
+	var lastInsertId int64
 
-	return err
+	err := repo.Conn.QueryRow(
+		ctx,
+		"INSERT INTO contacts (name, last_name, phone, email, address, author) values ($1, $2, $3, $4, $5, $6) RETURNING id",
+		inp.Name, inp.LastName, inp.Phone, inp.Email, inp.Address, inp.Author,
+	).Scan(&lastInsertId)
+
+	return lastInsertId, err
 }
 
 func (repo *Contacts) Delete(ctx context.Context, id int64) error {

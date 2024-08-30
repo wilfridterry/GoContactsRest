@@ -3,16 +3,21 @@ package service
 import (
 	"contact-list/internal/domain"
 	"context"
+	"time"
+
+	"github.com/sirupsen/logrus"
+	audit "github.com/wilfridterry/audit-log/pkg/domain"
 )
 
 type Contacts struct {
 	repository ContactRepository
+	auditClient AuditClient
 }
 
 type ContactRepository interface{
 	GetAll(context.Context) ([]domain.Contact, error)
 	GetById(context.Context, int64) (*domain.Contact, error)
-	Create(context.Context, *domain.SaveInputContact) error
+	Create(context.Context, *domain.SaveInputContact) (int64, error)
 	Delete(context.Context, int64) error
 	Update(context.Context, int64, *domain.SaveInputContact) error
 }
@@ -21,22 +26,86 @@ func (c *Contacts) All(ctx context.Context) ([]domain.Contact, error) {
 	return c.repository.GetAll(ctx)
 }
 
-func (c *Contacts) GetOne(ctx context.Context, id int64) (*domain.Contact, error) {
-	return c.repository.GetById(ctx, id)
+func (service *Contacts) GetOne(ctx context.Context, id int64) (*domain.Contact, error) {
+	contact, err := service.repository.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+		Action: audit.ACTION_GET,
+		Entity: audit.ENTITY_CONTACT,
+		EntityID: contact.ID,
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "Contacts.Get",
+		}).Error("failed to send log request:", err)
+	}
+
+	return contact, nil
 }
 
-func (c *Contacts) Create(ctx context.Context, inp *domain.SaveInputContact) error {
-	return c.repository.Create(ctx, inp)
+func (service *Contacts) Create(ctx context.Context, inp *domain.SaveInputContact) error {
+	id, err := service.repository.Create(ctx, inp)
+	if err != nil {
+		return err
+	}
+
+	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+		Action: audit.ACTION_CREATE,
+		Entity: audit.ENTITY_CONTACT,
+		EntityID: id,
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "Contacts.Update",
+		}).Error("failed to send log request:", err)
+	}
+
+	return nil
 }
 
-func (c *Contacts) Update(ctx context.Context, id int64, inp *domain.SaveInputContact) error {
-	return c.repository.Update(ctx, id, inp)
+func (service *Contacts) Update(ctx context.Context, id int64, inp *domain.SaveInputContact) error {
+	err := service.repository.Update(ctx, id, inp)
+	if err != nil {
+		return err
+	}
+
+	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+		Action: audit.ACTION_UPDATE,
+		Entity: audit.ENTITY_CONTACT,
+		EntityID: id,
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "Contacts.Update",
+		}).Error("failed to send log request:", err)
+	}
+
+	return nil
 }
 
-func (c *Contacts) Delete(ctx context.Context, id int64) error {
-	return c.repository.Delete(ctx, id)
+func (service *Contacts) Delete(ctx context.Context, id int64) error {
+	err := service.repository.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+	
+	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+		Action: audit.ACTION_DELETE,
+		Entity: audit.ENTITY_CONTACT,
+		EntityID: id,
+		Timestamp: time.Now(),
+	}); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"method": "Contacts.Delete",
+		}).Error("failed to send log request:", err)
+	}
+
+	return nil
 }
 
-func NewContacts(repository ContactRepository) *Contacts {
-	return &Contacts{repository}
+func NewContacts(repository ContactRepository, auditClient AuditClient) *Contacts {
+	return &Contacts{repository, auditClient}
 }

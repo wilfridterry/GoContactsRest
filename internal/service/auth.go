@@ -19,9 +19,7 @@ type Hashier interface {
 	Hash(string) (string, error)
 }
 
-type AuditClient interface {
-	SendLogRequest(ctx context.Context, req audit.LogItem) error
-}
+
 
 type Users struct {
 	repo        UserRepository
