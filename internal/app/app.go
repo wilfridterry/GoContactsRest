@@ -4,6 +4,7 @@ import (
 	"contact-list/internal/config"
 	"contact-list/internal/repository/psql"
 	"contact-list/internal/service"
+	grpc_client "contact-list/internal/transport/grpc"
 	"contact-list/internal/transport/rest"
 	"contact-list/pkg/database"
 	"contact-list/pkg/hashier"
@@ -62,6 +63,7 @@ func Run() {
 		Username: cf.DB.Username,
 		Password: cf.DB.Password,
 	})
+
 	if err != nil {
 		log.Error(err)
 	}
@@ -70,9 +72,14 @@ func Run() {
 	contactsRepo := psql.NewContacts(conn)
 	contactsService := service.NewContacts(contactsRepo)
 
+	auditClient, err := grpc_client.NewClient(cf.Grpc.Port)
+	if err != nil {
+		log.Error(err)
+	}
+
 	userRepo := psql.NewUsers(conn)
 	hashier := hashier.NewHashier(cf.Secret)
-	userService := service.NewUsers(userRepo, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
+	userService := service.NewUsers(userRepo, auditClient, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
 
 	handler := rest.NewHandler(contactsService, userService)
 

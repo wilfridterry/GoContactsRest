@@ -22,6 +22,10 @@ type Config struct {
 		Port int `mapstructure:"port"`
 	} `mapstructure:"server"`
 
+	Grpc struct {
+		Port int `mapstructure:"port"`
+	} `mapstructure:"grpc"`
+	
 	Logger struct {
 		Dir string `mapstructure:"dir"`
 		Filename string `mapstructure:"filename"`

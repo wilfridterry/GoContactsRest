@@ -7,6 +7,9 @@ auth:
 server:
   port: 8081
 
+grpc:
+  port: 9000
+
 logger:
   dir: "storage/logs"
   filename: "test.log"
