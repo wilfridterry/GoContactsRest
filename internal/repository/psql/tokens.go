@@ -18,7 +18,7 @@ func NewTokens(conn *pgx.Conn) *Tokens {
 func (r *Tokens) Create(ctx context.Context, session *domain.RefreshSession) error {
 	_, err := r.Conn.Exec(
 		ctx,
-		"INSERT INTO refresh_tokens (user_id, token expires_at) values ($1, $2, $3)",
+		"INSERT INTO refresh_tokens (user_id, token, expires_at) values ($1, $2, $3)",
 		session.UserId,
 		session.Token,
 		session.ExpiresAt,
@@ -35,7 +35,7 @@ func (r *Tokens) GetByToken(ctx context.Context, token string) (*domain.RefreshS
 		return &domain.RefreshSession{}, err
 	}
 
-	_, err := r.Conn.Exec(ctx, "DELETE FROM contacts WHERE token = $1", token)
+	_, err := r.Conn.Exec(ctx, "DELETE FROM refresh_tokens WHERE token = $1", token)
 
 
 	return &s, err
