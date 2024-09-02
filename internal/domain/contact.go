@@ -1,12 +1,7 @@
 package domain
 
 import (
-	"errors"
 	"time"
-)
-
-var (
-	ErrContactNotFound = errors.New("Contact not found")
 )
 
 type Contact struct {
@@ -22,10 +17,10 @@ type Contact struct {
 }
 
 type SaveInputContact struct {
-	Name      string `json:"name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	Phone     string `json:"phone" binding:"required,e164"`
-	Email     string `json:"email" binding:"required,email,unique"`
-	Address   string `json:"address" binding:"required"`
-	Author    string `json:"author" binding:"required"`
+	Name     string `json:"name" binding:"required"`
+	LastName string `json:"last_name" binding:"required"`
+	Phone    string `json:"phone" binding:"required,e164"`
+	Email    string `json:"email" binding:"required,email,unique"`
+	Address  string `json:"address" binding:"required"`
+	Author   string `json:"author" binding:"required"`
 }

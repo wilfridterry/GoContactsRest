@@ -26,8 +26,9 @@ type Contacts interface {
 
 type Auth interface {
 	SignUp(context.Context, *domain.SignUpInput) (*domain.User, error)
-	SingIn(context.Context, *domain.SignInInput) (string, error)
+	SingIn(context.Context, *domain.SignInInput) (string, string, error)
 	ParseJWTToken(context.Context, string) (int64, error)
+	RefreshTokens(context.Context, string) (string, string, error)
 }
 
 type Uri struct{
@@ -54,6 +55,7 @@ func (h *Handler) InitRouter() *gin.Engine {
 		{
 			auth.POST("/sign-up", h.signUp)
 			auth.GET("/sign-in", h.signIn)
+			auth.GET("/refresh", h.refresh)
 		}
 	}
 

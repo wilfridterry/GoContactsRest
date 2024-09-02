@@ -79,9 +79,10 @@ func Run() {
 
 	userRepo := psql.NewUsers(conn)
 	hashier := hashier.NewHashier(cf.Secret)
-	userService := service.NewUsers(userRepo, auditClient, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
+	sessionRepo := psql.NewTokens(conn)
+	authService := service.New(userRepo, sessionRepo, auditClient, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
 
-	handler := rest.NewHandler(contactsService, userService)
+	handler := rest.NewHandler(contactsService, authService)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cf.Server.Port),

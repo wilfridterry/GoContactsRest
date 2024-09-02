@@ -3,6 +3,8 @@ package service
 import (
 	"contact-list/internal/domain"
 	"context"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,18 +13,22 @@ import (
 )
 
 type UserRepository interface {
-	Create(context.Context, domain.User) (int64, error)
+	Create(context.Context, *domain.User) (int64, error)
 	GetByEmailAndPassword(context.Context, string, string) (*domain.User, error)
+}
+
+type SessionRepository interface {
+	Create(context.Context, *domain.RefreshSession) error
+	GetByToken(context.Context, string) (*domain.RefreshSession, error)
 }
 
 type Hashier interface {
 	Hash(string) (string, error)
 }
 
-
-
-type Users struct {
-	repo        UserRepository
+type Auth struct {
+	userRepo        UserRepository
+	sessionRepo SessionRepository
 	auditClient AuditClient
 	hashier     Hashier
 	hmacSecret  []byte
@@ -36,9 +42,10 @@ type UserClaim struct {
 	ExpiresAt int64
 }
 
-func NewUsers(repo UserRepository, auditClient AuditClient, hashier Hashier, secret []byte, ttlToken time.Duration) *Users {
-	return &Users{
-		repo: repo,
+func New(userRepo UserRepository, sessionRepo SessionRepository, auditClient AuditClient, hashier Hashier, secret []byte, ttlToken time.Duration) *Auth {
+	return &Auth{
+		userRepo: userRepo,
+		sessionRepo: sessionRepo,
 		auditClient: auditClient,
 		hashier: hashier,
 		hmacSecret: secret,
@@ -46,7 +53,7 @@ func NewUsers(repo UserRepository, auditClient AuditClient, hashier Hashier, sec
 	}
 }
 
-func (service *Users) SignUp(ctx context.Context, inp *domain.SignUpInput) (*domain.User, error) {
+func (service *Auth) SignUp(ctx context.Context, inp *domain.SignUpInput) (*domain.User, error) {
 	password, err := service.hashier.Hash(inp.Password)
 	if err != nil {
 		return nil, err
@@ -59,7 +66,7 @@ func (service *Users) SignUp(ctx context.Context, inp *domain.SignUpInput) (*dom
 		RegisteredAt: time.Now(),
 	}
 
-	id, err := service.repo.Create(ctx, user)
+	id, err := service.userRepo.Create(ctx, &user)
 	if err != nil {
 		return nil, err
 	}
@@ -80,16 +87,16 @@ func (service *Users) SignUp(ctx context.Context, inp *domain.SignUpInput) (*dom
 	return &user, nil
 }
 
-func (service *Users) SingIn(ctx context.Context, inp *domain.SignInInput) (string, error) {
+func (service *Auth) SingIn(ctx context.Context, inp *domain.SignInInput) (string, string, error) {
 	password, err := service.hashier.Hash(inp.Password)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	user, err := service.repo.GetByEmailAndPassword(ctx, inp.Email, password)
+	user, err := service.userRepo.GetByEmailAndPassword(ctx, inp.Email, password)
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
@@ -103,17 +110,10 @@ func (service *Users) SingIn(ctx context.Context, inp *domain.SignInInput) (stri
 		}).Error("failed to send log request:", err)
 	}
 
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, UserClaim{
-		RegisteredClaims: jwt.RegisteredClaims{},
-		ID:               int64(user.ID),
-		IssuedAt:         time.Now().Unix(),
-		ExpiresAt:        time.Now().Add(service.ttlToken).Unix(),
-	})
-
-	return t.SignedString(service.hmacSecret)
+	return service.generateTokens(ctx, user.ID)
 }
 
-func (service *Users) ParseJWTToken(ctx context.Context, tokenString string) (int64, error) {
+func (service *Auth) ParseJWTToken(ctx context.Context, tokenString string) (int64, error) {
 	userClaim := &UserClaim{}
 	token, err := jwt.ParseWithClaims(tokenString, userClaim, func(token *jwt.Token) (interface{}, error) {
 		return service.hmacSecret, nil
@@ -134,4 +134,59 @@ func (service *Users) ParseJWTToken(ctx context.Context, tokenString string) (in
 	}
 
 	return userClaim.ID, nil
+}
+
+func (service *Auth) RefreshTokens(ctx context.Context, token string) (string, string, error) {
+	session, err := service.sessionRepo.GetByToken(ctx, token)
+	if err != nil {
+		return "", "", err
+	}
+
+	if session.ExpiresAt.Unix() < time.Now().Unix() {
+		return "", "", domain.ErrRefreshTokenExpired
+	}
+
+	return service.generateTokens(ctx, session.UserId)
+}
+
+func (service *Auth) generateTokens(ctx context.Context, userId int64) (string, string, error) {
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, UserClaim{
+		RegisteredClaims: jwt.RegisteredClaims{},
+		ID:               int64(userId),
+		IssuedAt:         time.Now().Unix(),
+		ExpiresAt:        time.Now().Add(service.ttlToken).Unix(),
+	})
+
+	accessToken, err := t.SignedString(service.hmacSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := service.newRefreshToken()
+	if err != nil {
+		return "", "", err
+	}
+
+	if err := service.sessionRepo.Create(ctx, &domain.RefreshSession{
+		UserId: userId,
+		Token: refreshToken,
+		ExpiresAt: time.Now().Add(time.Hour * 24 * 30),
+
+	}); err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (service *Auth) newRefreshToken() (string, error) {
+	b := make([]byte, 32)
+	s := rand.NewSource(time.Now().Unix())
+	r := rand.New(s)
+	
+	if _, err := r.Read(b); err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", b), nil
 }

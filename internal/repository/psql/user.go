@@ -16,7 +16,7 @@ func NewUsers(conn *pgx.Conn) *Users {
 	return &Users{conn}
 }
 
-func (repo *Users) Create(ctx context.Context, user domain.User) (int64, error) {
+func (repo *Users) Create(ctx context.Context, user *domain.User) (int64, error) {
 	var lastInsertId int64
 
 	err := repo.Conn.QueryRow(
