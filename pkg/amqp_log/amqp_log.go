@@ -64,14 +64,20 @@ func (c *amqpClient) Close() {
 }
 
 func (l *Log) Info(lvl level, msg string) (error) {
-	return l.log(INFO, msg)
+	return l.log(map[string]any{
+		"level": lvl,
+		"message": msg,
+	})
 }
 
 func (l *Log) Error(lvl level, msg string) (error) {
-	return l.log(ERROR, msg)
+	return l.log(map[string]any{
+		"level": lvl,
+		"message": msg,
+	})
 }
 
-func (l *Log) log(lvl level, msg string) (error) {
+func (l *Log) log(msg map[string]any) (error) {
 	q, err := l.client.ch.QueueDeclare(
 		l.client.cf.TaskQueue,
 		false,
@@ -85,12 +91,7 @@ func (l *Log) log(lvl level, msg string) (error) {
 		return err
 	}
 
-	msgLog := MesageLog{
-		Level: lvl,
-		Value: msg,
-	}
-
-	msgBts, err := json.Marshal(msgLog)
+	msgBts, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
