@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	audit "github.com/wilfridterry/audit-log/pkg/domain"
+	// audit "github.com/wilfridterry/audit-log/pkg/domain"
 )
 
 type Contacts struct {
 	repository ContactRepository
 	auditClient AuditClient
+	auditLog AuditLog
 }
 
 type ContactRepository interface{
@@ -32,17 +33,28 @@ func (service *Contacts) GetOne(ctx context.Context, id int64) (*domain.Contact,
 		return nil, err
 	}
 
-	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
-		Action: audit.ACTION_GET,
-		Entity: audit.ENTITY_CONTACT,
-		EntityID: contact.ID,
+	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+	// 	Action: audit.ACTION_GET,
+	// 	Entity: audit.ENTITY_CONTACT,
+	// 	EntityID: contact.ID,
+	// 	Timestamp: time.Now(),
+	// }); err != nil {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"method": "Contacts.Get",
+	// 	}).Error("failed to send log request:", err)
+	// }
+
+	if err := service.auditLog.Log(LogMessage{
+		Action:    ACTION_GET,
+		Entity:    ENTITY_CONTACT,
+		EntityID:  contact.ID,
 		Timestamp: time.Now(),
 	}); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"method": "Contacts.Get",
 		}).Error("failed to send log request:", err)
 	}
-
+	
 	return contact, nil
 }
 
@@ -52,17 +64,28 @@ func (service *Contacts) Create(ctx context.Context, inp *domain.SaveInputContac
 		return err
 	}
 
-	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
-		Action: audit.ACTION_CREATE,
-		Entity: audit.ENTITY_CONTACT,
-		EntityID: id,
+	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+	// 	Action: audit.ACTION_CREATE,
+	// 	Entity: audit.ENTITY_CONTACT,
+	// 	EntityID: id,
+	// 	Timestamp: time.Now(),
+	// }); err != nil {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"method": "Contacts.Create",
+	// 	}).Error("failed to send log request:", err)
+	// }
+
+	if err := service.auditLog.Log(LogMessage{
+		Action:    ACTION_CREATE,
+		Entity:    ENTITY_CONTACT,
+		EntityID:  id,
 		Timestamp: time.Now(),
 	}); err != nil {
 		logrus.WithFields(logrus.Fields{
-			"method": "Contacts.Update",
+			"method": "Contacts.Create",
 		}).Error("failed to send log request:", err)
 	}
-
+	
 	return nil
 }
 
@@ -72,16 +95,28 @@ func (service *Contacts) Update(ctx context.Context, id int64, inp *domain.SaveI
 		return err
 	}
 
-	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
-		Action: audit.ACTION_UPDATE,
-		Entity: audit.ENTITY_CONTACT,
-		EntityID: id,
+	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+	// 	Action: audit.ACTION_UPDATE,
+	// 	Entity: audit.ENTITY_CONTACT,
+	// 	EntityID: id,
+	// 	Timestamp: time.Now(),
+	// }); err != nil {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"method": "Contacts.Update",
+	// 	}).Error("failed to send log request:", err)
+	// }
+
+	if err := service.auditLog.Log(LogMessage{
+		Action:    ACTION_UPDATE,
+		Entity:    ENTITY_CONTACT,
+		EntityID:  id,
 		Timestamp: time.Now(),
 	}); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"method": "Contacts.Update",
 		}).Error("failed to send log request:", err)
 	}
+	
 
 	return nil
 }
@@ -92,20 +127,36 @@ func (service *Contacts) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	
-	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
-		Action: audit.ACTION_DELETE,
-		Entity: audit.ENTITY_CONTACT,
-		EntityID: id,
+	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+	// 	Action: audit.ACTION_DELETE,
+	// 	Entity: audit.ENTITY_CONTACT,
+	// 	EntityID: id,
+	// 	Timestamp: time.Now(),
+	// }); err != nil {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"method": "Contacts.Delete",
+	// 	}).Error("failed to send log request:", err)
+	// }
+
+	if err := service.auditLog.Log(LogMessage{
+		Action:    ACTION_DELETE,
+		Entity:    ENTITY_CONTACT,
+		EntityID:  id,
 		Timestamp: time.Now(),
 	}); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"method": "Contacts.Delete",
 		}).Error("failed to send log request:", err)
 	}
+	
 
 	return nil
 }
 
-func NewContacts(repository ContactRepository, auditClient AuditClient) *Contacts {
-	return &Contacts{repository, auditClient}
+func NewContacts(repository ContactRepository, auditClient AuditClient, auditLog AuditLog) *Contacts {
+	return &Contacts{
+		repository: repository,
+		auditClient: auditClient,
+		auditLog: auditLog,
+	}
 }

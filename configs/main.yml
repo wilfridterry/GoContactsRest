@@ -13,3 +13,5 @@ grpc:
 logger:
   dir: "storage/logs"
   filename: "test.log"
+
+  

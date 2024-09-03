@@ -12,32 +12,32 @@ type ConfigOptions struct {
 	Password string
 	Host string
 	Port int
-	TaskQueue string
+	Queue string
 }
 
-type amqpClient struct {
+type Client struct {
 	conn *amqp.Connection
 	ch *amqp.Channel
 	cf *ConfigOptions
 }
 
-type Log struct {
-	client amqpClient
-}
+// type Log struct {
+// 	client amqpClient
+// }
 
-type level string
+// type level string
 
-type MesageLog struct {
-	Level level `json:"level"`
-	Value string `json:"value"`
-}
+// type MesageLog struct {
+// 	Level level `json:"level"`
+// 	Value string `json:"value"`
+// }
 
-const (
-	INFO level = "INFO"
-	ERROR level = "ERROR"
-)
+// const (
+// 	INFO level = "INFO"
+// 	ERROR level = "ERROR"
+// )
 
-func New(cf *ConfigOptions) (*Log, error) {
+func New(cf *ConfigOptions) (*Client, error) {
 	addr := fmt.Sprintf("amqp://%s:%s@%s:%d/", cf.Username, cf.Password, cf.Host, cf.Port)
 	conn, err := amqp.Dial(addr)
 	if err != nil {
@@ -48,13 +48,11 @@ func New(cf *ConfigOptions) (*Log, error) {
 	if err != nil {
 		return nil, err
 	}
-	
-	client := amqpClient{conn: conn, ch: ch, cf: cf}
 
-	return &Log{client: client}, nil
+	return &Client{conn: conn, ch: ch, cf: cf}, nil
 }
 
-func (c *amqpClient) Close() {
+func (c *Client) Close() {
 	if c.ch != nil {
 		c.ch.Close()
 	}
@@ -63,23 +61,23 @@ func (c *amqpClient) Close() {
 	}
 }
 
-func (l *Log) Info(lvl level, msg string) (error) {
-	return l.log(map[string]any{
-		"level": lvl,
-		"message": msg,
-	})
-}
+// func (l *Log) Info(lvl level, msg string) (error) {
+// 	return l.log(map[string]any{
+// 		"level": lvl,
+// 		"message": msg,
+// 	})
+// }
 
-func (l *Log) Error(lvl level, msg string) (error) {
-	return l.log(map[string]any{
-		"level": lvl,
-		"message": msg,
-	})
-}
+// func (l *Log) Error(lvl level, msg string) (error) {
+// 	return l.log(map[string]any{
+// 		"level": lvl,
+// 		"message": msg,
+// 	})
+// }
 
-func (l *Log) log(msg map[string]any) (error) {
-	q, err := l.client.ch.QueueDeclare(
-		l.client.cf.TaskQueue,
+func (c *Client) Log(msg map[string]any) (error) {
+	q, err := c.ch.QueueDeclare(
+		c.cf.Queue,
 		false,
 		false,
 		false,
@@ -96,7 +94,7 @@ func (l *Log) log(msg map[string]any) (error) {
 		return err
 	}
 
-	return l.client.ch.Publish(
+	return c.ch.Publish(
 		"",
 		q.Name,
 		false, 

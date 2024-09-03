@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
-	audit "github.com/wilfridterry/audit-log/pkg/domain"
+	// audit "github.com/wilfridterry/audit-log/pkg/domain"
 )
 
 type UserRepository interface {
@@ -27,9 +27,10 @@ type Hashier interface {
 }
 
 type Auth struct {
-	userRepo        UserRepository
+	userRepo    UserRepository
 	sessionRepo SessionRepository
 	auditClient AuditClient
+	auditLog    AuditLog
 	hashier     Hashier
 	hmacSecret  []byte
 	ttlToken    time.Duration
@@ -42,14 +43,15 @@ type UserClaim struct {
 	ExpiresAt int64
 }
 
-func New(userRepo UserRepository, sessionRepo SessionRepository, auditClient AuditClient, hashier Hashier, secret []byte, ttlToken time.Duration) *Auth {
+func New(userRepo UserRepository, sessionRepo SessionRepository, auditClient AuditClient, auditLog AuditLog, hashier Hashier, secret []byte, ttlToken time.Duration) *Auth {
 	return &Auth{
-		userRepo: userRepo,
+		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
 		auditClient: auditClient,
-		hashier: hashier,
-		hmacSecret: secret,
-		ttlToken: ttlToken,
+		auditLog: auditLog,
+		hashier:     hashier,
+		hmacSecret:  secret,
+		ttlToken:    ttlToken,
 	}
 }
 
@@ -73,10 +75,21 @@ func (service *Auth) SignUp(ctx context.Context, inp *domain.SignUpInput) (*doma
 
 	user.ID = id
 
-	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
-		Action: audit.ACTION_REGISTER,
-		Entity: audit.ENTITY_USER,
-		EntityID: user.ID,
+	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+	// 	Action:    audit.ACTION_REGISTER,
+	// 	Entity:    audit.ENTITY_USER,
+	// 	EntityID:  user.ID,
+	// 	Timestamp: time.Now(),
+	// }); err != nil {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"method": "Users.SignUp",
+	// 	}).Error("failed to send log request:", err)
+	// }
+
+	if err := service.auditLog.Log(LogMessage{
+		Action:    ACTION_REGISTER,
+		Entity:    ENTITY_USER,
+		EntityID:  user.ID,
 		Timestamp: time.Now(),
 	}); err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -99,16 +112,28 @@ func (service *Auth) SingIn(ctx context.Context, inp *domain.SignInInput) (strin
 		return "", "", err
 	}
 
-	if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
-		Action: audit.ACTION_LOGIN,
-		Entity: audit.ENTITY_USER,
-		EntityID: user.ID,
+	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
+	// 	Action:    audit.ACTION_LOGIN,
+	// 	Entity:    audit.ENTITY_USER,
+	// 	EntityID:  user.ID,
+	// 	Timestamp: time.Now(),
+	// }); err != nil {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		"method": "Users.SignIn",
+	// 	}).Error("failed to send log request:", err)
+	// }
+
+	if err := service.auditLog.Log(LogMessage{
+		Action:    ACTION_LOGIN,
+		Entity:    ENTITY_USER,
+		EntityID:  user.ID,
 		Timestamp: time.Now(),
 	}); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"method": "Users.SignIn",
 		}).Error("failed to send log request:", err)
 	}
+
 
 	return service.generateTokens(ctx, user.ID)
 }
@@ -168,10 +193,9 @@ func (service *Auth) generateTokens(ctx context.Context, userId int64) (string, 
 	}
 
 	if err := service.sessionRepo.Create(ctx, &domain.RefreshSession{
-		UserId: userId,
-		Token: refreshToken,
+		UserId:    userId,
+		Token:     refreshToken,
 		ExpiresAt: time.Now().Add(time.Hour * 24 * 30),
-
 	}); err != nil {
 		return "", "", err
 	}
@@ -183,7 +207,7 @@ func (service *Auth) newRefreshToken() (string, error) {
 	b := make([]byte, 32)
 	s := rand.NewSource(time.Now().Unix())
 	r := rand.New(s)
-	
+
 	if _, err := r.Read(b); err != nil {
 		return "", err
 	}

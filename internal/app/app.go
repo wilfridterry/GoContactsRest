@@ -6,6 +6,7 @@ import (
 	"contact-list/internal/service"
 	grpc_client "contact-list/internal/transport/grpc"
 	"contact-list/internal/transport/rest"
+	amqplog "contact-list/pkg/amqp_log"
 	"contact-list/pkg/database"
 	"contact-list/pkg/hashier"
 	"context"
@@ -74,13 +75,25 @@ func Run() {
 		log.Error(err)
 	}
 
+	amqpClient, err := amqplog.New(&amqplog.ConfigOptions{
+		Host: cf.Rabbitmq.Host,
+		Port: int(cf.Rabbitmq.Port),
+		Username: cf.Rabbitmq.Username,
+		Password: cf.Rabbitmq.Password,
+		Queue: cf.Rabbitmq.Queue,
+	})
+	if err != nil {
+		log.Error(err)
+	}
+
+	auditLogService := service.NewAuditLog(amqpClient)
 	contactsRepo := psql.NewContacts(conn)
-	contactsService := service.NewContacts(contactsRepo, auditClient)
+	contactsService := service.NewContacts(contactsRepo, auditClient, auditLogService)
 
 	userRepo := psql.NewUsers(conn)
 	hashier := hashier.NewHashier(cf.Secret)
 	sessionRepo := psql.NewTokens(conn)
-	authService := service.New(userRepo, sessionRepo, auditClient, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
+	authService := service.New(userRepo, sessionRepo, auditClient, auditLogService, hashier, []byte(cf.Secret), cf.Auth.TokenTTL)
 
 	handler := rest.NewHandler(contactsService, authService)
 
