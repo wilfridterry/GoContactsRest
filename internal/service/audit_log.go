@@ -44,7 +44,7 @@ func NewAuditLog(client AMQPClient) *AuditLogService {
 
 func (s *AuditLogService) Log(logMsg LogMessage) error {
 	return s.client.Log(map[string]any{
-		"ation":     logMsg.Action,
+		"action":     logMsg.Action,
 		"entity":    logMsg.Entity,
 		"entity_id": logMsg.EntityID,
 		"timestamp": logMsg.Timestamp,
