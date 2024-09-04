@@ -85,6 +85,7 @@ func Run() {
 	if err != nil {
 		log.Error(err)
 	}
+	defer amqpClient.Close()
 
 	auditLogService := service.NewAuditLog(amqpClient)
 	contactsRepo := psql.NewContacts(conn)

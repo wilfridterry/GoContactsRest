@@ -21,22 +21,6 @@ type Client struct {
 	cf *ConfigOptions
 }
 
-// type Log struct {
-// 	client amqpClient
-// }
-
-// type level string
-
-// type MesageLog struct {
-// 	Level level `json:"level"`
-// 	Value string `json:"value"`
-// }
-
-// const (
-// 	INFO level = "INFO"
-// 	ERROR level = "ERROR"
-// )
-
 func New(cf *ConfigOptions) (*Client, error) {
 	addr := fmt.Sprintf("amqp://%s:%s@%s:%d/", cf.Username, cf.Password, cf.Host, cf.Port)
 	conn, err := amqp.Dial(addr)
@@ -60,20 +44,6 @@ func (c *Client) Close() {
 		c.conn.Close()
 	}
 }
-
-// func (l *Log) Info(lvl level, msg string) (error) {
-// 	return l.log(map[string]any{
-// 		"level": lvl,
-// 		"message": msg,
-// 	})
-// }
-
-// func (l *Log) Error(lvl level, msg string) (error) {
-// 	return l.log(map[string]any{
-// 		"level": lvl,
-// 		"message": msg,
-// 	})
-// }
 
 func (c *Client) Log(msg map[string]any) (error) {
 	q, err := c.ch.QueueDeclare(
