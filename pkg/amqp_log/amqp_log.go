@@ -90,10 +90,6 @@ func (c *Client) GetLogs() (<-chan amqp.Delivery, error) {
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	return c.ch.Consume(
 		q.Name, // queue
 		"",     // consumer
