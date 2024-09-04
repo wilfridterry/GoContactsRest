@@ -79,7 +79,7 @@ func (c *Client) Log(msg map[string]any) error {
 func (c *Client) GetLogs() (<-chan amqp.Delivery, error) {
 	q, err := c.ch.QueueDeclare(
 		c.cf.Queue, // name
-		true,       // durable
+		false,       // durable
 		false,      // delete when unused
 		false,      // exclusive
 		false,      // no-wait
