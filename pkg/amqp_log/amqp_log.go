@@ -10,15 +10,15 @@ import (
 type ConfigOptions struct {
 	Username string
 	Password string
-	Host string
-	Port int
-	Queue string
+	Host     string
+	Port     int
+	Queue    string
 }
 
 type Client struct {
 	conn *amqp.Connection
-	ch *amqp.Channel
-	cf *ConfigOptions
+	ch   *amqp.Channel
+	cf   *ConfigOptions
 }
 
 func New(cf *ConfigOptions) (*Client, error) {
@@ -45,14 +45,14 @@ func (c *Client) Close() {
 	}
 }
 
-func (c *Client) Log(msg map[string]any) (error) {
+func (c *Client) Log(msg map[string]any) error {
 	q, err := c.ch.QueueDeclare(
-		c.cf.Queue,
-		false,
-		false,
-		false,
-		false,
-		nil,
+		c.cf.Queue, // name
+		false,      // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
 	)
 
 	if err != nil {
@@ -65,13 +65,48 @@ func (c *Client) Log(msg map[string]any) (error) {
 	}
 
 	return c.ch.Publish(
-		"",
-		q.Name,
-		false, 
+		"",     // exchange
+		q.Name, // routing key
+		false,  // mandatory
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
-			Body: msgBts,
+			Body:        msgBts,
 		},
+	)
+}
+
+func (c *Client) GetLogs() (<-chan amqp.Delivery, error) {
+	q, err := c.ch.QueueDeclare(
+		c.cf.Queue, // name
+		true,       // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.ch.Qos(
+		1,     // prefetch count
+		0,     // prefetch size
+		false, // global
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return c.ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		false,  // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
 	)
 }
