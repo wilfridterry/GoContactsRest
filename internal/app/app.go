@@ -1,14 +1,6 @@
 package app
 
 import (
-	"contact-list/internal/config"
-	"contact-list/internal/repository/psql"
-	"contact-list/internal/service"
-	grpc_client "contact-list/internal/transport/grpc"
-	"contact-list/internal/transport/rest"
-	amqplog "contact-list/pkg/amqp_log"
-	"contact-list/pkg/database"
-	"contact-list/pkg/hashier"
 	"context"
 	"fmt"
 	"io"
@@ -18,6 +10,15 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"github.com/wilfridterry/contact-list/internal/config"
+	"github.com/wilfridterry/contact-list/internal/repository/psql"
+	"github.com/wilfridterry/contact-list/internal/service"
+	grpc_client "github.com/wilfridterry/contact-list/internal/transport/grpc"
+	"github.com/wilfridterry/contact-list/internal/transport/rest"
+	amqplog "github.com/wilfridterry/contact-list/pkg/amqp_log"
+	"github.com/wilfridterry/contact-list/pkg/database"
+	"github.com/wilfridterry/contact-list/pkg/hashier"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -76,11 +77,11 @@ func Run() {
 	}
 
 	amqpClient, err := amqplog.New(&amqplog.ConfigOptions{
-		Host: cf.Rabbitmq.Host,
-		Port: int(cf.Rabbitmq.Port),
+		Host:     cf.Rabbitmq.Host,
+		Port:     int(cf.Rabbitmq.Port),
 		Username: cf.Rabbitmq.Username,
 		Password: cf.Rabbitmq.Password,
-		Queue: cf.Rabbitmq.Queue,
+		Queue:    cf.Rabbitmq.Queue,
 	})
 	if err != nil {
 		log.Error(err)

@@ -1,9 +1,10 @@
 package psql
 
 import (
-	"contact-list/internal/domain"
 	"context"
 	"errors"
+
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -21,9 +22,9 @@ func (repo *Users) Create(ctx context.Context, user *domain.User) (int64, error)
 
 	err := repo.Conn.QueryRow(
 		ctx,
-		"INSERT INTO users (name, email, password, registered_at) values ($1, $2, $3, $4) RETURNING id", 
-		user.Name, 
-		user.Email, 
+		"INSERT INTO users (name, email, password, registered_at) values ($1, $2, $3, $4) RETURNING id",
+		user.Name,
+		user.Email,
 		user.Password,
 		user.RegisteredAt,
 	).Scan(&lastInsertId)

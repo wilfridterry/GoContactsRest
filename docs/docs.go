@@ -16,6 +16,44 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/sign-in": {
+            "get": {
+                "description": "refresh tokens for auth",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "refresh tokens",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-up": {
             "post": {
                 "description": "sign up with data",
@@ -36,7 +74,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.UserSignUp"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.SignUpInput"
                         }
                     }
                 ],
@@ -84,7 +122,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/contact-list_internal_domain.Contact"
+                                "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.Contact"
                             }
                         }
                     },
@@ -127,7 +165,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.SaveInputContact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.SaveInputContact"
                         }
                     }
                 ],
@@ -182,7 +220,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.Contact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.Contact"
                         }
                     },
                     "400": {
@@ -224,7 +262,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.SaveInputContact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.SaveInputContact"
                         }
                     },
                     {
@@ -239,7 +277,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.Contact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.Contact"
                         }
                     },
                     "400": {
@@ -310,7 +348,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "contact-list_internal_domain.Contact": {
+        "github_com_wilfridterry_contact-list_internal_domain.Contact": {
             "type": "object",
             "properties": {
                 "address": {
@@ -342,7 +380,7 @@ const docTemplate = `{
                 }
             }
         },
-        "contact-list_internal_domain.SaveInputContact": {
+        "github_com_wilfridterry_contact-list_internal_domain.SaveInputContact": {
             "type": "object",
             "required": [
                 "address",
@@ -373,7 +411,26 @@ const docTemplate = `{
                 }
             }
         },
-        "contact-list_internal_domain.UserSignUp": {
+        "github_com_wilfridterry_contact-list_internal_domain.SignInInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 4
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 70,
+                    "minLength": 6
+                }
+            }
+        },
+        "github_com_wilfridterry_contact-list_internal_domain.SignUpInput": {
             "type": "object",
             "required": [
                 "email",
@@ -382,13 +439,19 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 4
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 70,
+                    "minLength": 6
                 }
             }
         },

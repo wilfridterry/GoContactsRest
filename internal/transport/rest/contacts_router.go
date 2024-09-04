@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"contact-list/internal/domain"
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"errors"
 	"net/http"

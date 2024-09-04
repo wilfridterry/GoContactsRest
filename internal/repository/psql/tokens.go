@@ -1,8 +1,9 @@
 package psql
 
 import (
-	"contact-list/internal/domain"
 	"context"
+
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -36,7 +37,6 @@ func (r *Tokens) GetByToken(ctx context.Context, token string) (*domain.RefreshS
 	}
 
 	_, err := r.Conn.Exec(ctx, "DELETE FROM refresh_tokens WHERE token = $1", token)
-
 
 	return &s, err
 }

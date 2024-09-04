@@ -10,6 +10,44 @@
     "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
+        "/auth/sign-in": {
+            "get": {
+                "description": "refresh tokens for auth",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "refresh tokens",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-up": {
             "post": {
                 "description": "sign up with data",
@@ -30,7 +68,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.UserSignUp"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.SignUpInput"
                         }
                     }
                 ],
@@ -78,7 +116,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/contact-list_internal_domain.Contact"
+                                "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.Contact"
                             }
                         }
                     },
@@ -121,7 +159,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.SaveInputContact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.SaveInputContact"
                         }
                     }
                 ],
@@ -176,7 +214,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.Contact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.Contact"
                         }
                     },
                     "400": {
@@ -218,7 +256,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.SaveInputContact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.SaveInputContact"
                         }
                     },
                     {
@@ -233,7 +271,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contact-list_internal_domain.Contact"
+                            "$ref": "#/definitions/github_com_wilfridterry_contact-list_internal_domain.Contact"
                         }
                     },
                     "400": {
@@ -304,7 +342,7 @@
         }
     },
     "definitions": {
-        "contact-list_internal_domain.Contact": {
+        "github_com_wilfridterry_contact-list_internal_domain.Contact": {
             "type": "object",
             "properties": {
                 "address": {
@@ -336,7 +374,7 @@
                 }
             }
         },
-        "contact-list_internal_domain.SaveInputContact": {
+        "github_com_wilfridterry_contact-list_internal_domain.SaveInputContact": {
             "type": "object",
             "required": [
                 "address",
@@ -367,7 +405,26 @@
                 }
             }
         },
-        "contact-list_internal_domain.UserSignUp": {
+        "github_com_wilfridterry_contact-list_internal_domain.SignInInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 4
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 70,
+                    "minLength": 6
+                }
+            }
+        },
+        "github_com_wilfridterry_contact-list_internal_domain.SignUpInput": {
             "type": "object",
             "required": [
                 "email",
@@ -376,13 +433,19 @@
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 4
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 70,
+                    "minLength": 6
                 }
             }
         },

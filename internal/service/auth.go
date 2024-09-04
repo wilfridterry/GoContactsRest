@@ -1,11 +1,12 @@
 package service
 
 import (
-	"contact-list/internal/domain"
 	"context"
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
@@ -48,7 +49,7 @@ func New(userRepo UserRepository, sessionRepo SessionRepository, auditClient Aud
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
 		auditClient: auditClient,
-		auditLog: auditLog,
+		auditLog:    auditLog,
 		hashier:     hashier,
 		hmacSecret:  secret,
 		ttlToken:    ttlToken,
@@ -133,7 +134,6 @@ func (service *Auth) SingIn(ctx context.Context, inp *domain.SignInInput) (strin
 			"method": "Users.SignIn",
 		}).Error("failed to send log request:", err)
 	}
-
 
 	return service.generateTokens(ctx, user.ID)
 }

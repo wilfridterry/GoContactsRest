@@ -1,21 +1,22 @@
 package service
 
 import (
-	"contact-list/internal/domain"
 	"context"
 	"time"
+
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"github.com/sirupsen/logrus"
 	// audit "github.com/wilfridterry/audit-log/pkg/domain"
 )
 
 type Contacts struct {
-	repository ContactRepository
+	repository  ContactRepository
 	auditClient AuditClient
-	auditLog AuditLog
+	auditLog    AuditLog
 }
 
-type ContactRepository interface{
+type ContactRepository interface {
 	GetAll(context.Context) ([]domain.Contact, error)
 	GetById(context.Context, int64) (*domain.Contact, error)
 	Create(context.Context, *domain.SaveInputContact) (int64, error)
@@ -54,7 +55,7 @@ func (service *Contacts) GetOne(ctx context.Context, id int64) (*domain.Contact,
 			"method": "Contacts.Get",
 		}).Error("failed to send log request:", err)
 	}
-	
+
 	return contact, nil
 }
 
@@ -85,7 +86,7 @@ func (service *Contacts) Create(ctx context.Context, inp *domain.SaveInputContac
 			"method": "Contacts.Create",
 		}).Error("failed to send log request:", err)
 	}
-	
+
 	return nil
 }
 
@@ -116,7 +117,6 @@ func (service *Contacts) Update(ctx context.Context, id int64, inp *domain.SaveI
 			"method": "Contacts.Update",
 		}).Error("failed to send log request:", err)
 	}
-	
 
 	return nil
 }
@@ -126,7 +126,7 @@ func (service *Contacts) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// if err := service.auditClient.SendLogRequest(ctx, audit.LogItem{
 	// 	Action: audit.ACTION_DELETE,
 	// 	Entity: audit.ENTITY_CONTACT,
@@ -148,15 +148,14 @@ func (service *Contacts) Delete(ctx context.Context, id int64) error {
 			"method": "Contacts.Delete",
 		}).Error("failed to send log request:", err)
 	}
-	
 
 	return nil
 }
 
 func NewContacts(repository ContactRepository, auditClient AuditClient, auditLog AuditLog) *Contacts {
 	return &Contacts{
-		repository: repository,
+		repository:  repository,
 		auditClient: auditClient,
-		auditLog: auditLog,
+		auditLog:    auditLog,
 	}
 }

@@ -1,4 +1,4 @@
-module contact-list
+module github.com/wilfridterry/contact-list
 
 go 1.22.5
 

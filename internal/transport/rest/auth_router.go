@@ -1,8 +1,9 @@
 package rest
 
 import (
-	"contact-list/internal/domain"
 	"errors"
+
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"net/http"
 
@@ -17,7 +18,7 @@ import (
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param user body domain.UserSignUp true "user sign up"
+// @Param user body domain.SignUpInput true "user sign up"
 // @Success      201
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      404  {object}  httputil.HTTPError
@@ -49,7 +50,7 @@ func (h *Handler) signUp(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param user body domain.UserSignIn true "user sign in"
+// @Param user body domain.SignInInput true "user sign in"
 // @Success      200
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      404  {object}  httputil.HTTPError

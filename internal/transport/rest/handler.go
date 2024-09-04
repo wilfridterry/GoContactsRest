@@ -1,19 +1,20 @@
 package rest
 
 import (
-	"contact-list/internal/domain"
 	"context"
 
-	"github.com/gin-gonic/gin"
-	"github.com/swaggo/files"
-	"github.com/swaggo/gin-swagger"
+	"github.com/wilfridterry/contact-list/internal/domain"
 
-	_ "contact-list/docs"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "github.com/wilfridterry/contact-list/docs"
 )
 
 type Handler struct {
 	contactService Contacts
-	authServie Auth
+	authServie     Auth
 }
 
 type Contacts interface {
@@ -31,7 +32,7 @@ type Auth interface {
 	RefreshTokens(context.Context, string) (string, string, error)
 }
 
-type Uri struct{
+type Uri struct {
 	ID int64 `uri:"id" binding:"required"`
 }
 

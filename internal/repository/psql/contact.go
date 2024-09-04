@@ -1,10 +1,11 @@
 package psql
 
 import (
-	"contact-list/internal/domain"
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/wilfridterry/contact-list/internal/domain"
 
 	"github.com/jackc/pgx/v5"
 )
