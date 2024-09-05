@@ -1,4 +1,4 @@
-enviroment: local
+enviroment: testing
 secret: salt
 
 db:
