@@ -35,6 +35,24 @@ func TestNewConfig(t *testing.T) {
 	}
 
 	setEnv := func(env env) {
+		os.Unsetenv("ENVIROMENT")
+		os.Unsetenv("SECRET")
+		os.Unsetenv("DB_HOST")
+		os.Unsetenv("DB_PORT")
+		os.Unsetenv("DB_DATABASE")
+		os.Unsetenv("DB_USERNAME")
+		os.Unsetenv("DB_PASSWORD")
+		os.Unsetenv("RABBITMQ_HOST")
+		os.Unsetenv("RABBITMQ_PORT")
+		os.Unsetenv("RABBITMQ_QUEUE")
+		os.Unsetenv("RABBITMQ_USERNAME")
+		os.Unsetenv("RABBITMQ_PASSWORD")
+		os.Unsetenv("AUTH_TOKEN_TTL")
+		os.Unsetenv("SERVER_PORT")
+		os.Unsetenv("GRPC_PORT")
+		os.Unsetenv("LOGGER_DIR")
+		os.Unsetenv("LOGGER_FILENAME")
+
 		if env.enviroment != "" {
 			os.Setenv("ENVIROMENT", env.enviroment)
 		}
@@ -191,10 +209,61 @@ func TestNewConfig(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "test mixed(env and file)",
+			args: args{
+				path: "fixtures",
+				filename: "main",
+				env: env{
+					dbPort: "5435",
+					dbDatabase: "env_postgres",
+					dbPassword: "env_password",
+					rabbitmqHost: "127.0.0.1",
+					rabbitmqPort: "5675",
+					rabbitmqQueue: "env_queue",
+					rabbitmqPassword: "env_password",
+					grpcPort: "9001",
+					loggerDir: "storage/env_logs",
+				},
+			},
+			want: &Config{
+				Enviroment: "testing",
+				Secret: "salt",
+				DB: Postgres{
+					Host: "localhost",
+					Port: 5435,
+					Database: "env_postgres",
+					Username: "root",
+					Password: "env_password",
+				},
+				Rabbitmq: Rabbitmq{
+					Host: "127.0.0.1",
+					Port: 5675,
+					Queue: "env_queue",
+					Username: "root",
+					Password: "env_password",
+				},
+				Auth: Auth{
+					TokenTTL: time.Minute * 15,
+				},
+				Server: Server{
+					Port: 8081,
+				},
+				Grpc: Grpc{
+					Port: 9001,
+				},
+				Logger: Logger{
+					Dir: "storage/env_logs",
+					Filename: "test.log",
+				},
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			
 			setEnv(testCase.args.env)
 			
 			got, err := NewConfig(testCase.args.path, testCase.args.filename)
