@@ -72,7 +72,7 @@ func NewConfig(dirname, filename string) (*Config, error) {
 		return nil, err
 	}
 
-	if err := godotenv.Load(); err == nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("error with load env file")
 	}
 

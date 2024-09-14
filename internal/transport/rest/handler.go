@@ -12,6 +12,8 @@ import (
 	_ "github.com/wilfridterry/contact-list/docs"
 )
 
+//go:generate mockgen -source=handler.go -destination=mocks/mock.go
+
 type Handler struct {
 	contactService Contacts
 	authServie     Auth

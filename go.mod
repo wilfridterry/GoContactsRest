@@ -61,6 +61,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/wilfridterry/audit-log v0.0.0-20240829135635-a3878a6c01fa // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect

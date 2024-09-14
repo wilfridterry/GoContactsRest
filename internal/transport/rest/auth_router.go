@@ -41,7 +41,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Created.", "user": user})
+	c.JSON(http.StatusOK, gin.H{"message": "Created.", "user": struct{ id int64 }{id: user.ID}})
 }
 
 // SignIn godoc
