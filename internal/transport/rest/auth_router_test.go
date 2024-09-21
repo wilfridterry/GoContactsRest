@@ -3,6 +3,7 @@ package rest
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"net/http/httptest"
 	"testing"
 
@@ -33,14 +34,14 @@ func TestHandler_signUp(t *testing.T) {
 				Password: "qwerty",
 			},
 			mockBehavior: func(s *mock_rest.MockAuth, userInput *domain.SignUpInput) {
-				s.EXPECT().SignUp(context.Background(), userInput).Return(domain.User{
+				s.EXPECT().SignUp(context.Background(), userInput).Return(&domain.User{
 					ID:    1,
 					Name:  "Test",
 					Email: "test@test.com",
 				}, nil)
 			},
 			expectedStatusCode:  200,
-			expectedRequestBody: `{"message": "Created", "user": {"id": 1}}`,
+			expectedRequestBody: `{"message": "Created.", "user": {"id":1,"name":"Test","email":"test@test.com","registered_at":"0001-01-01T00:00:00Z","created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z"}}`,
 		},
 	}
 
@@ -66,8 +67,12 @@ func TestHandler_signUp(t *testing.T) {
 
 			r.ServeHTTP(w, req)
 
+			var actual, expected map[string]interface{}
+			json.Unmarshal(w.Body.Bytes(), &actual)
+			json.Unmarshal([]byte(testCase.expectedRequestBody), &expected)
+
 			assert.Equal(t, testCase.expectedStatusCode, w.Code)
-			assert.Equal(t, testCase.expectedRequestBody, w.Body.String())
+			assert.Equal(t, actual, expected)
 		})
 	}
 }
